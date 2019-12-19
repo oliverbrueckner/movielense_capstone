@@ -3,6 +3,7 @@ title: "Report on Rating Predictions for Movielens"
 author: "Oliver Brueckner"
 date: "`r format(Sys.Date())`"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
 ---
@@ -13,9 +14,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-This is a report on rating predictions for the movielense data set. After some data exploration we will follow three approaches to reach our goal: Make predictions for the ratings in the validation set with an RMSE <= 0.8649.
+This is a report on rating predictions for the movielense data set. After some data exploration we will follow some approaches to reach our goal: Make predictions for the ratings in the validation set with an RMSE <= 0.8649.
 
-## Inspecting the Data
+## Analysis: Inspecting the Data
 
 The data was loaded with the code given in the course. A first view on the data shows that there is a huge dataset with more than 9 million ratings on movies. These ratings come from 69,878 users and are given to 10,677 movies. These numbers show, that not every movie is rated by every user. 
 
@@ -30,9 +31,10 @@ library(ggplot2)
 
 
 ```{r echo=FALSE}
-edx_meta
+edx_meta[,1:3]
 ```
 
+### What is the Distribution of Ratings?
 If we have a closer look to the distribution of the Ratings we see, that they tend to be .0 instead of .5 The average rating is about 3.51 with a standard deviation of 1.06.
 
 ```{r echo=FALSE}
@@ -44,11 +46,78 @@ rating_count%>%
   ggtitle("Ratings")
 ```
 
+### What ist the Distribution of Ratings per Movie?
+If we have a look on the distinct movies we see, that there are movies with very high numbers of ratings and that there are also movies with very small numbers of ratings. On average a movie has `r mean(movie_count$n)` ratings.
+```{r echo=FALSE}
+movie_count%>%
+  ggplot(aes(n)) + 
+  geom_histogram(bins = 30, color = "black") + 
+  scale_x_log10() + 
+  ggtitle("Movies")
+```
+
+### What ist the Distribution of Ratings per User?
+If we have a look on users we see, that there are users with very high numbers of ratings and that there are many users with very small numbers of ratings. On average a user has 129 ratings
+```{r echo=FALSE}
+user_count%>%
+  ggplot(aes(n)) + 
+  geom_histogram(bins = 30, color = "black") + 
+  scale_x_log10() +
+  ggtitle("Users")
+```
+
+## Method 
+Our Inspection of the data shows, that the movie and the user could have an influence on our predictions. To verify this, we first try a naive approach, where we guess allways the mean rating mu_hat. Here are the results of this naive approach:
+
+```{r}
+mu_hat
+```
+```{r echo=FALSE}
+rmse_results[1,]
+```
+
+As we see, this approach does not fit our goal. The RMSE is 1.06.
+
+### Using the Movie Signals to improve the guess
+In the next step, we start building a linear model. The first parameter that influences our guess is the movie rating. For this we push our estimatet rating in the direction of the mean rating of the movie.
+
+If we do this we get the following results:
+```{r echo=FALSE}
+rmse_results[2,]
+```
+As we see, the RMSE improved, but still does not fit our goal.
+
+### Using the Movie Signals and User Signals to improve the guess
+The next step is adding the user signals to our model. 
+If we do this we get the following results:
+```{r echo=FALSE}
+rmse_results[3,]
+```
+As we see, the RMSE improved, but still does not fit our goal.
+
+### Using regularization to avoid large impact of small samples
+In the next step we regularize the parameters of our model. This avoids large impact of small sample sizes. Regularization uses a parameter Lambda, that could be optimized. We have done that and found that Lambda=5.25 is optimal for our estimation.
+```{r}
+qplot(lambdas, rmses)
+```
 
 
+If we use this parameter this we get the following results:
+```{r echo=FALSE}
+rmse_results[4,]
+```
+As we see, the RMSE improved and fits our goal.
+
+## Results
+The followin table shows the RMSE values for the approaches. We see that the regularized use of the movie and user signals is useful to make a good prediction.
+```{r echo=FALSE}
+rmse_results
+```
 
 
+## Conclusion
+We see that we can make good estimations based on the movie and user signals when we avoid the effects of small sample sizes through regularization. To make our predictions more accurate the next steps could be:
 
-You can also embed plots, for example:
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+* Using the genres as additional signal
+* try to find similar movies and users to enhance the prediction
+* add more predictors like: actors, directors or studios
