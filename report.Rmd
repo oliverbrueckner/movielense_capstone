@@ -19,7 +19,7 @@ This is a report on rating predictions for the movielense data set. After some d
 The data was loaded with the code given in the course. A first view on the data shows that there is a huge dataset with more than 9 million ratings on movies. These ratings come from 69,878 users and are given to 10,677 movies. These numbers show, that not every movie is rated by every user. 
 
 ```{r echo=FALSE}
-load("mydata.rda")
+load("mydata.csv")
 ```
 
 ```{r loading-libs, message=FALSE, echo=FALSE}
