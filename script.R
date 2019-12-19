@@ -173,4 +173,4 @@ rmse_results <- bind_rows(rmse_results,
                                      RMSE = min(rmses)))
 rmse_results %>% knitr::kable()
 
-save(movie_count, user_count,rating_count, rmse_results,edx_meta, lambdas, rmses, file = "mydata.rda")
+save(movie_count, user_count,rating_count, mu_hat ,rmse_results,edx_meta, lambdas, rmses, file = "mydata.rda")
